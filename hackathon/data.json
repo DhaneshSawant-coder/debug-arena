@@ -1,0 +1,94 @@
+{
+  "groups": [
+    {
+      "id": "6d6ad75895ac",
+      "name": "group 1",
+      "code": "349588",
+      "startedAt": null
+    },
+    {
+      "id": "a51228140ee0",
+      "name": "group 2",
+      "code": "241439",
+      "startedAt": null
+    }
+  ],
+  "participants": [
+    {
+      "id": "9c2053df53f7",
+      "name": "zero 1",
+      "code": "349588",
+      "groupId": "6d6ad75895ac",
+      "token": "b62393279539d795e2484772"
+    },
+    {
+      "id": "aef79f08c0e4",
+      "name": "zero 1",
+      "code": "241439",
+      "groupId": "a51228140ee0",
+      "token": "9a165cd960e9770f4569c2ac"
+    }
+  ],
+  "problems": [
+    {
+      "id": "p001_js",
+      "title": "Fix Off-by-One Loop Sum",
+      "language": "javascript",
+      "description": "The function calculateTotal should return the sum of all elements in the items array (10 + 25 + 45 + 5 = 85). Fix the loop index bug so it starts from the first element.",
+      "code": "function calculateTotal(prices) {\n  let total = 0;\n  // Bug: loop starts at 1, skipping the first element\n  for (let i = 1; i < prices.length; i++) {\n    total += prices[i];\n  }\n  return total;\n}\n\nconst items = [10, 25, 45, 5];\nconsole.log(calculateTotal(items));",
+      "expected": "85",
+      "points": 10
+    },
+    {
+      "id": "p002_py",
+      "title": "Fix Word Reversal Slicing",
+      "language": "python",
+      "description": "The function reverse_words should reverse the order of words in a sentence. Currently it skips words with an incorrect step size. Fix it so it prints 'fox brown quick the'.",
+      "code": "def reverse_words(sentence):\n    words = sentence.split()\n    # Bug: incorrect slice step\n    return \" \".join(words[::-2])\n\nprint(reverse_words(\"the quick brown fox\"))",
+      "expected": "fox brown quick the",
+      "points": 10
+    },
+    {
+      "id": "p003_c",
+      "title": "Fix Float Average Division",
+      "language": "c",
+      "description": "Calculate the average of 3 test scores (85, 90, 88). Currently integer division truncates the result to 87.00. Fix the division to produce the exact average 87.67.",
+      "code": "#include <stdio.h>\n\nint main() {\n    int s1 = 85, s2 = 90, s3 = 88;\n    // Bug: integer division truncates decimals\n    float avg = (s1 + s2 + s3) / 3;\n    printf(\"%.2f\\n\", avg);\n    return 0;\n}",
+      "expected": "87.67",
+      "points": 15
+    },
+    {
+      "id": "p004_cpp",
+      "title": "Fix Negative Numbers Maximum",
+      "language": "cpp",
+      "description": "Find the maximum number in an array of negative integers. Fix the initial value bug that causes it to incorrectly print 0 instead of -3.",
+      "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> nums = {-12, -45, -3, -19, -8};\n    // Bug: initialized to 0 instead of first element\n    int maxVal = 0;\n    for (int n : nums) {\n        if (n > maxVal) {\n            maxVal = n;\n        }\n    }\n    std::cout << maxVal << std::endl;\n    return 0;\n}",
+      "expected": "-3",
+      "points": 15
+    },
+    {
+      "id": "p005_java",
+      "title": "Fix Java String Equality",
+      "language": "java",
+      "description": "In Java, checking string equality with '==' compares memory addresses rather than string content. Fix the comparison so it correctly prints 'ACCESS GRANTED'.",
+      "code": "public class Solution {\n    public static void main(String[] args) {\n        String token = new String(\"SECRET_KEY\");\n        String input = \"SECRET_KEY\";\n\n        // Bug: == compares references, not values\n        if (token == input) {\n            System.out.println(\"ACCESS GRANTED\");\n        } else {\n            System.out.println(\"ACCESS DENIED\");\n        }\n    }\n}",
+      "expected": "ACCESS GRANTED",
+      "points": 10
+    },
+    {
+      "id": "p006_cs",
+      "title": "Fix Factorial Zero Bug",
+      "language": "csharp",
+      "description": "The factorial of 5 is 5 * 4 * 3 * 2 * 1 = 120. Currently the loop multiplies down to 0, resulting in 0. Fix the loop boundary.",
+      "code": "using System;\n\nclass Program {\n    static void Main() {\n        int n = 5;\n        int result = 1;\n        // Bug: loop multiplies by 0\n        for (int i = n; i >= 0; i--) {\n            result *= i;\n        }\n        Console.WriteLine(result);\n    }\n}",
+      "expected": "120",
+      "points": 10
+    }
+  ],
+  "solves": [],
+  "settings": {
+    "geminiApiKey": "",
+    "aiEnabled": true,
+    "executionEngine": "auto"
+  }
+}

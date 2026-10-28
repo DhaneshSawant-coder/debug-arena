@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start Debug Arena Server",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/hackathon/server.js",
+      "cwd": "${workspaceFolder}/hackathon",
+      "env": {
+        "ADMIN_PASSWORD": "admin123",
+        "PORT": "3000"
+      },
+      "console": "integratedTerminal",
+      "restart": true
+    },
+    {
+      "name": "Run Runner Diagnostics",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/hackathon/test_runner.js",
+      "cwd": "${workspaceFolder}/hackathon",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Open Web UI (localhost:3000)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/hackathon/public"
+    }
+  ]
+}
+
+}

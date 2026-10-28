@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: debug-arena
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: GEMINI_API_KEY
+        sync: false

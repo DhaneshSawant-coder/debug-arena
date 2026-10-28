@@ -1,0 +1,1298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEBUG ARENA // LIVE HACKATHON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800;900&family=Space+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #090a0f;
+    --card: #12131b;
+    --card-alt: #181a26;
+    --line: #ffffff;
+    --line-subtle: #2d3148;
+    --text: #ffffff;
+    --muted: #8e96b3;
+    --accent: #ffe600;       /* High-voltage Cyber Yellow */
+    --accent-text: #000000;
+    --good: #00ff66;         /* Toxic Neon Green */
+    --good-text: #000000;
+    --bad: #ff2a5f;          /* Hyper Neon Red/Pink */
+    --cyan: #00f0ff;         /* Electric Cyan */
+    --shadow-main: 5px 5px 0px #ffffff;
+    --shadow-accent: 5px 5px 0px #ffe600;
+    --shadow-good: 5px 5px 0px #00ff66;
+    --shadow-bad: 5px 5px 0px #ff2a5f;
+    --shadow-cyan: 5px 5px 0px #00f0ff;
+    --shadow-black: 5px 5px 0px #000000;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header - Industrial brutalist banner */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: #000000;
+    border-bottom: 3px solid #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .blink-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background: var(--good);
+    box-shadow: 0 0 10px var(--good);
+    animation: blinker 1s steps(2, start) infinite;
+  }
+  @keyframes blinker { to { opacity: 0; } }
+
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+  }
+
+  /* Cards - Sharp thick borders with hard brutalist drop shadows */
+  .card {
+    background: var(--card);
+    border: 3px solid #ffffff;
+    border-radius: 0px !important;
+    padding: 22px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-main);
+    position: relative;
+  }
+
+  h1, h2, h3 {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+  }
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h2::before {
+    content: '//';
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 900;
+  }
+
+  /* Form Elements - Rectangular, bold high contrast */
+  input, select, textarea {
+    width: 100%;
+    padding: 11px 13px;
+    background: #000000;
+    color: #ffffff;
+    border: 2.5px solid #ffffff;
+    border-radius: 0px !important;
+    font: inherit;
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13.5px;
+    box-shadow: 3px 3px 0px #000000;
+    transition: all 0.15s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 4px 4px 0px var(--accent);
+    background: #06070c;
+  }
+
+  label {
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px !important;
+  }
+
+  /* Brutalist Buttons - Heavy borders, sharp edges, tactile click physics */
+  button {
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 2.5px solid #ffffff;
+    border-radius: 0px !important;
+    padding: 10px 18px;
+    font: inherit;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #ffffff;
+    transition: all 0.1s ease;
+    user-select: none;
+  }
+
+  button:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #ffffff;
+  }
+
+  button:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #ffffff;
+  }
+
+  button.ghost {
+    background: #181a26;
+    color: #ffffff;
+    border: 2.5px solid #ffffff;
+    box-shadow: 4px 4px 0px #ffffff;
+  }
+  button.ghost:hover:not(:disabled) {
+    background: #24273a;
+  }
+
+  button.good {
+    background: var(--good);
+    color: #000000;
+    border: 2.5px solid #ffffff;
+    box-shadow: 4px 4px 0px var(--good);
+  }
+  button.good:hover:not(:disabled) {
+    box-shadow: 6px 6px 0px var(--good);
+  }
+
+  button.danger {
+    background: var(--bad);
+    color: #ffffff;
+    border: 2.5px solid #ffffff;
+    box-shadow: 4px 4px 0px var(--bad);
+  }
+  button.danger:hover:not(:disabled) {
+    box-shadow: 6px 6px 0px var(--bad);
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: 2px 2px 0px #555566;
+    transform: none !important;
+  }
+
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 120px; }
+  .row > button { flex: 0 0 auto; min-width: 0; }
+
+  /* Tabs - Industrial Segmented Buttons */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+
+  .tabs button {
+    background: #12141e;
+    border: 2.5px solid var(--line-subtle);
+    color: var(--muted);
+    box-shadow: 3px 3px 0px #000000;
+  }
+
+  .tabs button:hover {
+    border-color: #ffffff;
+    color: #ffffff;
+    box-shadow: 4px 4px 0px #ffffff;
+  }
+
+  .tabs button.on {
+    background: var(--accent);
+    color: #000000;
+    border: 2.5px solid #ffffff;
+    box-shadow: 5px 5px 0px #ffffff;
+  }
+
+  .muted {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* Digital Countdown Timer Block */
+  .timer {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: #000000;
+    border: 3px solid var(--accent);
+    box-shadow: 4px 4px 0px var(--accent);
+    padding: 6px 16px;
+    border-radius: 0px !important;
+    text-shadow: 0 0 10px rgba(255, 230, 0, 0.4);
+  }
+
+  .timer.low {
+    color: var(--bad);
+    border-color: var(--bad);
+    box-shadow: 4px 4px 0px var(--bad);
+    text-shadow: 0 0 12px rgba(255, 42, 95, 0.6);
+    animation: alertPulse 0.8s infinite alternate;
+  }
+  @keyframes alertPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.03); }
+  }
+
+  /* Code Console & Editor */
+  .editor {
+    display: flex;
+    border: 3px solid #ffffff;
+    border-radius: 0px !important;
+    overflow: hidden;
+    background: #000000;
+    box-shadow: 6px 6px 0px #000000, 6px 6px 0px 3px #ffffff;
+    margin: 14px 0;
+  }
+
+  .gutter {
+    padding: 12px 10px;
+    text-align: right;
+    color: #5d6582;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.6;
+    background: #0a0b10;
+    border-right: 2px solid #282a3c;
+    user-select: none;
+    white-space: pre;
+    overflow: hidden;
+  }
+
+  .editor textarea {
+    border: 0;
+    border-radius: 0 !important;
+    line-height: 1.6;
+    height: 360px;
+    resize: vertical;
+    white-space: pre;
+    overflow: auto;
+    background: #050508;
+    color: #00ff66;
+    caret-color: #ffe600;
+    font-size: 13.5px;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    box-shadow: none !important;
+  }
+
+  .editor textarea:focus {
+    box-shadow: none !important;
+    background: #050508;
+  }
+
+  /* Badges & Pills */
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 2px solid #ffffff;
+    border-radius: 0px !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    background: #000000;
+    color: #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
+  }
+
+  /* Tables & Leaderboards */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13.5px;
+    border: 3px solid #ffffff;
+    background: #0d0e16;
+    box-shadow: 5px 5px 0px #ffffff;
+    margin-top: 14px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 2px solid #25283c;
+    border-right: 1.5px solid #25283c;
+  }
+
+  th:last-child, td:last-child {
+    border-right: none;
+  }
+
+  th {
+    background: #000000;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 3px solid #ffffff;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr.current-user-row {
+    background: var(--accent) !important;
+    color: #000000 !important;
+    font-weight: 900;
+  }
+  tr.current-user-row td {
+    color: #000000 !important;
+    border-color: #000000 !important;
+  }
+  tr.current-user-row code {
+    background: #000000 !important;
+    color: var(--accent) !important;
+    border-color: #000000 !important;
+  }
+
+  /* Feedback & Result Messages */
+  .msg {
+    padding: 14px 16px;
+    border-radius: 0px !important;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    font-weight: 700;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .msg.err {
+    background: #25060f;
+    color: #ff547e;
+    border: 3px solid var(--bad);
+    box-shadow: 5px 5px 0px var(--bad);
+  }
+
+  .msg.ok {
+    background: #042111;
+    color: #2eff8b;
+    border: 3px solid var(--good);
+    box-shadow: 5px 5px 0px var(--good);
+  }
+
+  .msg.info {
+    background: #071922;
+    color: var(--cyan);
+    border: 3px solid var(--cyan);
+    box-shadow: 5px 5px 0px var(--cyan);
+  }
+
+  pre {
+    margin: 8px 0 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    background: #000000;
+    color: #ffffff;
+    padding: 10px 12px;
+    border: 2px solid #ffffff;
+    box-shadow: 3px 3px 0px #000000;
+    overflow-x: auto;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #000000;
+    color: var(--accent);
+    padding: 2px 7px;
+    border: 1.5px solid #ffffff;
+    font-size: 12.5px;
+  }
+
+  .hidden { display: none !important; }
+  .center { max-width: 420px; margin: 8vh auto; }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #000000; border: 1px solid #2d3148; }
+  ::-webkit-scrollbar-thumb { background: var(--line-subtle); border: 2px solid #000000; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="blink-dot"></span>⚡ DEBUG_ARENA.EXE</h1>
+  <div id="who" class="muted"></div>
+</header>
+<main id="app"></main>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const app = $('#app');
+let token = localStorage.getItem('token') || '';
+let role = localStorage.getItem('role') || '';
+let timer = null, poll = null;
+
+async function api(path, method = 'GET', body) {
+  const r = await fetch('/api' + path, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-token': token },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401 || r.status === 403) { if (token) logout(); }
+  if (!r.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function logout() {
+  localStorage.clear(); token = ''; role = ''; clearInterval(timer); clearInterval(poll); render();
+}
+function render() {
+  clearInterval(timer); clearInterval(poll);
+  $('#who').innerHTML = token ? `${role === 'admin' ? '<span class="pill" style="background:var(--accent);color:#000;border-color:#000;box-shadow:2px 2px 0 #fff">ADMIN</span>' : '<span class="pill">PARTICIPANT</span>'} · <a href="#" id="lo" style="color:var(--bad);font-weight:800;text-decoration:none;border-bottom:2px solid var(--bad);font-family:monospace;margin-left:6px">[ LOG OUT ]</a>` : '';
+  if ($('#lo')) $('#lo').onclick = e => { e.preventDefault(); logout(); };
+  if (!token) return loginView();
+  role === 'admin' ? adminView() : participantView();
+}
+
+/* ---------------- LOGIN ---------------- */
+function loginView() {
+  app.innerHTML = `
+  <div class="card center">
+    <div style="font-family:'JetBrains Mono', monospace;font-size:12px;color:var(--accent);letter-spacing:1.5px;margin-bottom:10px">// ACCESS_GATEWAY //</div>
+    <div class="tabs"><button class="on" id="tp">PARTICIPANT</button><button id="ta">ADMIN</button></div>
+    <div id="pForm">
+      <p><input id="nm" placeholder="ENTER YOUR NAME / CODENAME"></p>
+      <p><input id="cd" placeholder="6-DIGIT GROUP ACCESS CODE"></p>
+      <button id="go" style="width:100%;padding:12px">ENTER ARENA ➔</button>
+      <p class="muted" style="text-align:center;margin:12px 0 0;font-size:12px;font-family:'JetBrains Mono',monospace">// NAME & GROUP CODE REQUIRED TO CONNECT //</p>
+    </div>
+    <div id="aForm" class="hidden">
+      <p><input id="pw" type="password" placeholder="ADMIN PASSWORD"></p>
+      <button id="goa" style="width:100%;padding:12px">ENTER CONTROL PANEL ➔</button>
+    </div>
+    <div id="lerr" class="msg err hidden"></div>
+  </div>`;
+  const show = a => { $('#pForm').classList.toggle('hidden', a); $('#aForm').classList.toggle('hidden', !a); $('#tp').classList.toggle('on', !a); $('#ta').classList.toggle('on', a); };
+  $('#tp').onclick = () => show(false); $('#ta').onclick = () => show(true);
+  const doLogin = async body => {
+    try { const r = await api('/login', 'POST', body); token = r.token; role = r.role; localStorage.setItem('token', token); localStorage.setItem('role', role); render(); }
+    catch (e) { const b = $('#lerr'); b.textContent = e.message; b.classList.remove('hidden'); }
+  };
+  $('#go').onclick = () => doLogin({ name: $('#nm').value, code: $('#cd').value });
+  $('#goa').onclick = () => doLogin({ password: $('#pw').value });
+}
+
+/* ---------------- PARTICIPANT ---------------- */
+let currentProblemId = null, endsAt = 0;
+
+function renderGroupLeaderboard(list, groupName) {
+  if (!list || !list.length) return '';
+  return `
+    <div class="card" style="margin-top:24px">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0;font-size:16px">🏆 ${esc(groupName)} // LIVE LEADERBOARD</h3>
+        <span class="pill">${list.length} ${list.length === 1 ? 'MEMBER' : 'MEMBERS'}</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">RANK</th>
+            <th>PARTICIPANT</th>
+            <th>SOLVED</th>
+            <th>POINTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map((m, i) => `
+            <tr class="${m.isCurrent ? 'current-user-row' : ''}">
+              <td><b>${i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : ('#' + (i + 1))}</b></td>
+              <td><b>${esc(m.name)}</b> ${m.isCurrent ? '<span class="pill" style="font-size:10px;background:#000;color:var(--accent);border:1.5px solid #000;box-shadow:none;margin-left:6px">YOU</span>' : ''}</td>
+              <td><code>${m.solved}</code></td>
+              <td><b style="font-size:15px">${m.score}</b></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function participantView() {
+  app.innerHTML = `<div id="pv"></div>`;
+  await refreshParticipant();
+  poll = setInterval(refreshParticipant, 5000);
+}
+
+async function refreshParticipant() {
+  let s;
+  try { s = await api('/state'); } catch (e) { return; }
+  const pv = $('#pv'); if (!pv) return;
+  if (s.status !== 'running') {
+    currentProblemId = null; clearInterval(timer);
+    const text = {
+      nogroup: 'You have not been assigned to a group yet. Please wait for the admin.',
+      waiting: `Group <b>${esc(s.group)}</b> has not started yet. This page updates automatically.`,
+      finished: `Group <b>${esc(s.group)}</b> has finished all problems. Thanks for playing!`,
+    }[s.status];
+    pv.innerHTML = `<div class="card"><h2>Hi ${esc(s.name)}</h2><p>${text}</p></div>` + (s.group ? renderGroupLeaderboard(s.groupLeaderboard, s.group) : '');
+    return;
+  }
+
+  const langBadge = l => {
+    const map = {
+      javascript: '🟨 JAVASCRIPT', js: '🟨 JAVASCRIPT',
+      python: '🐍 PYTHON 3', py: '🐍 PYTHON 3',
+      java: '☕ JAVA',
+      c: '🔷 C',
+      cpp: '⚡ C++', 'c++': '⚡ C++',
+      csharp: '🟣 C#', 'c#': '🟣 C#', cs: '🟣 C#'
+    };
+    return map[String(l || '').toLowerCase()] || String(l || 'JS').toUpperCase();
+  };
+
+  endsAt = Date.now() + s.msLeft;
+  if (currentProblemId !== s.problem.id) {
+    currentProblemId = s.problem.id;
+    pv.innerHTML = `
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="pill" style="border-color:var(--cyan);color:var(--cyan);box-shadow:2px 2px 0 var(--cyan)">${esc(s.group)}</span>
+            <span class="pill">PROBLEM ${s.index} / ${s.total}</span>
+            <span class="pill" style="background:var(--accent);color:#000;border-color:#fff;box-shadow:2px 2px 0 #fff">${langBadge(s.problem.language)}</span>
+          </div>
+          <div class="timer" id="tm" style="flex:0 0 auto"></div>
+        </div>
+        <h2 style="margin-top:16px;font-size:18px">${esc(s.problem.title)}</h2>
+        <div style="background:#000000;border:2px solid #2d3148;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.6">${esc(s.problem.description)}</div>
+        <div class="editor"><div class="gutter" id="gut"></div><textarea id="code" spellcheck="false"></textarea></div>
+        <div class="row" style="margin-top:14px">
+          <button id="run" class="ghost">▶ RUN TEST</button>
+          <button id="sub" class="good">✔ SUBMIT CODE</button>
+          <span id="solved" class="pill hidden" style="background:var(--good);color:#000;border-color:#000;box-shadow:2px 2px 0 var(--good)">SOLVED ✓</span>
+        </div>
+        <div id="res"></div>
+      </div>
+      <div id="grpBoard">${renderGroupLeaderboard(s.groupLeaderboard, s.group)}</div>`;
+    const ta = $('#code'); ta.value = s.problem.code;
+    const gut = () => { $('#gut').textContent = ta.value.split('\n').map((_, i) => i + 1).join('\n'); $('#gut').scrollTop = ta.scrollTop; };
+    ta.oninput = gut; ta.onscroll = () => { $('#gut').scrollTop = ta.scrollTop; }; gut();
+    ta.onkeydown = e => { if (e.key === 'Tab') { e.preventDefault(); const p = ta.selectionStart; ta.setRangeText('  ', p, ta.selectionEnd, 'end'); gut(); } };
+    $('#run').onclick = () => exec('/run');
+    $('#sub').onclick = () => exec('/submit');
+    clearInterval(timer);
+    timer = setInterval(tick, 500); tick();
+  } else {
+    const gb = $('#grpBoard');
+    if (gb && s.groupLeaderboard) gb.innerHTML = renderGroupLeaderboard(s.groupLeaderboard, s.group);
+  }
+  $('#solved')?.classList.toggle('hidden', !s.solved);
+}
+
+function tick() {
+  const left = Math.max(0, endsAt - Date.now());
+  const m = String(Math.floor(left / 60000)).padStart(2, '0'), sec = String(Math.floor(left / 1000) % 60).padStart(2, '0');
+  const t = $('#tm'); if (!t) return;
+  t.textContent = `${m}:${sec}`; t.classList.toggle('low', left < 60000);
+  if (left === 0) { currentProblemId = null; refreshParticipant(); }
+}
+
+async function exec(path) {
+  const res = $('#res');
+  res.innerHTML = `<div class="msg info">${path === '/submit' ? 'Running code and evaluating requirements with AI…' : 'Running test…'}</div>`;
+  try {
+    const r = await api(path, 'POST', { code: $('#code').value });
+    if (!r.ok) {
+      res.innerHTML = `<div class="msg err"><b>EXECUTION FAILED:</b>\n<pre>${esc(r.message)}</pre></div>`;
+    } else if (path === '/run') {
+      res.innerHTML = `<div class="msg ok"><b>✓ EXECUTED WITHOUT ERRORS:</b>\n<pre>${esc(r.output) || '(no stdout printed)'}</pre></div>`;
+    } else {
+      let html = '';
+      if (r.correct) {
+        html = `<div class="msg ok"><b>🎉 CHALLENGE PASSED! Requirements verified and points awarded.</b>\n<pre>${esc(r.output)}</pre>`;
+        if (r.aiFeedback) {
+          html += `<div style="margin-top:12px;padding:12px 14px;background:#031c0e;border:2.5px solid var(--good);box-shadow:4px 4px 0px var(--good);font-size:13px;color:#2eff8b">🤖 <b>AI Requirement Review:</b> ${esc(r.aiFeedback)}</div>`;
+        }
+        html += `</div>`;
+        $('#solved')?.classList.remove('hidden');
+      } else {
+        html = `<div class="msg err"><b>❌ SUBMISSION NOT ACCEPTED</b>`;
+        if (r.outputMatches && !r.meetsRequirements) {
+          html += `\nOutput matched expected stdout, but the logic did not satisfy the problem statement requirements.`;
+        } else {
+          html += `\nOutput does not match what the program should produce.\n<pre>${esc(r.output)}</pre>`;
+        }
+        if (r.aiFeedback) {
+          html += `<div style="margin-top:12px;padding:12px 14px;background:#24060f;border:2.5px solid var(--bad);box-shadow:4px 4px 0px var(--bad);font-size:13px;color:#ff4d79">🤖 <b>AI Requirement Feedback:</b> ${esc(r.aiFeedback)}</div>`;
+        }
+        html += `</div>`;
+      }
+      res.innerHTML = html;
+    }
+  } catch (e) { res.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+}
+
+/* ---------------- ADMIN ---------------- */
+let tab = 'board', D = null;
+async function adminView() {
+  app.innerHTML = `
+    <div class="tabs" id="tabs"></div><div id="tabBody"></div>`;
+  await loadAdmin();
+  poll = setInterval(loadAdmin, 5000);
+}
+async function loadAdmin() {
+  try { D = await api('/admin/data'); } catch (e) { return; }
+  if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+  drawAdmin();
+}
+
+function drawAdmin() {
+  const names = { board: '📊 LEADERBOARD', groups: '👥 GROUPS & USERS', problems: '⚡ CHALLENGES', ai: '🤖 AI & RUNNERS' };
+  $('#tabs').innerHTML = Object.entries(names).map(([k, v]) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${v}</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { tab = b.dataset.t; drawAdmin(); });
+  ({ board: boardTab, groups: groupsTab, problems: problemsTab, ai: aiTab })[tab]();
+}
+
+const act = async (fn) => { try { await fn(); } catch (e) { alert(e.message); } D = await api('/admin/data'); drawAdmin(); };
+const gname = id => D.groups.find(g => g.id === id)?.name || '—';
+
+let boardGroupFilter = 'all';
+
+function boardTab() {
+  const sortFn = (a, b) => b.score - a.score || a.lastSolve - b.lastSolve;
+
+  const groupStats = D.groups.map(g => {
+    const members = D.participants.filter(p => p.groupId === g.id).sort(sortFn);
+    const totalPoints = members.reduce((sum, p) => sum + p.score, 0);
+    const totalSolved = members.reduce((sum, p) => sum + p.solved, 0);
+    return { ...g, members, totalPoints, totalSolved };
+  }).sort((a, b) => b.totalPoints - a.totalPoints);
+
+  const unassigned = D.participants.filter(p => !p.groupId).sort(sortFn);
+
+  const filterButtons = `
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="${boardGroupFilter === 'all' ? 'on' : 'ghost'}" data-bg="all" style="padding:8px 16px;font-size:12px">
+        📊 ALL GROUPS OVERVIEW
+      </button>
+      ${D.groups.map(g => `
+        <button class="${boardGroupFilter === g.id ? 'on' : 'ghost'}" data-bg="${g.id}" style="padding:8px 16px;font-size:12px">
+          👥 ${esc(g.name)} (${D.participants.filter(p => p.groupId === g.id).length})
+        </button>
+      `).join('')}
+      ${unassigned.length ? `
+        <button class="${boardGroupFilter === 'unassigned' ? 'on' : 'ghost'}" data-bg="unassigned" style="padding:8px 16px;font-size:12px">
+          ⚠️ UNASSIGNED (${unassigned.length})
+        </button>
+      ` : ''}
+    </div>`;
+
+  let contentHtml = '';
+
+  if (boardGroupFilter === 'all') {
+    contentHtml += `
+      <div class="card">
+        <h2>🏆 GROUP STANDINGS // TEAM COMPARISON</h2>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:60px">RANK</th>
+              <th>GROUP NAME</th>
+              <th>ACCESS CODE</th>
+              <th>MEMBERS</th>
+              <th>TOTAL SOLVES</th>
+              <th>TOTAL POINTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${groupStats.map((g, i) => `
+              <tr>
+                <td><b>${i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : ('#' + (i + 1))}</b></td>
+                <td><b>${esc(g.name)}</b></td>
+                <td><code>${esc(g.code || '—')}</code></td>
+                <td><span class="pill">${g.members.length}</span></td>
+                <td><code>${g.totalSolved}</code></td>
+                <td><b style="color:var(--accent);font-size:16px">${g.totalPoints} PTS</b></td>
+              </tr>
+            `).join('') || '<tr><td colspan="6" class="muted">No groups created yet</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+
+    if (groupStats.length === 0) {
+      contentHtml += `<div class="card"><p class="muted">No groups created yet. Create groups in the "Groups & Users" tab.</p></div>`;
+    } else {
+      groupStats.forEach(g => {
+        contentHtml += `
+          <div class="card">
+            <div class="row" style="justify-content:space-between">
+              <h2>👥 ${esc(g.name)} // LEADERBOARD</h2>
+              <span class="pill" style="font-weight:800">CODE: <code>${esc(g.code || '—')}</code> · TOTAL: ${g.totalPoints} PTS</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px">RANK</th>
+                  <th>MEMBER NAME</th>
+                  <th>SOLVED</th>
+                  <th>POINTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${g.members.map((p, i) => `
+                  <tr>
+                    <td><b>${i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : ('#' + (i + 1))}</b></td>
+                    <td><b>${esc(p.name)}</b></td>
+                    <td><code>${p.solved}</code></td>
+                    <td><b style="color:var(--accent)">${p.score}</b></td>
+                  </tr>
+                `).join('') || '<tr><td colspan="4" class="muted">No participants in this group yet. Share access code <code>' + esc(g.code) + '</code> to have members join.</td></tr>'}
+              </tbody>
+            </table>
+          </div>`;
+      });
+    }
+
+    if (unassigned.length) {
+      contentHtml += `
+        <div class="card">
+          <h2>⚠️ UNASSIGNED PARTICIPANTS</h2>
+          <table>
+            <thead>
+              <tr><th>RANK</th><th>NAME</th><th>SOLVED</th><th>POINTS</th></tr>
+            </thead>
+            <tbody>
+              ${unassigned.map((p, i) => `
+                <tr>
+                  <td>#${i + 1}</td>
+                  <td>${esc(p.name)}</td>
+                  <td><code>${p.solved}</code></td>
+                  <td><b>${p.score}</b></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+  } else if (boardGroupFilter === 'unassigned') {
+    contentHtml += `
+      <div class="card">
+        <h2>⚠️ UNASSIGNED PARTICIPANTS LEADERBOARD</h2>
+        <table>
+          <thead>
+            <tr><th>RANK</th><th>NAME</th><th>SOLVED</th><th>POINTS</th></tr>
+          </thead>
+          <tbody>
+            ${unassigned.map((p, i) => `
+              <tr>
+                <td>#${i + 1}</td>
+                <td><b>${esc(p.name)}</b></td>
+                <td><code>${p.solved}</code></td>
+                <td><b>${p.score}</b></td>
+              </tr>
+            `).join('') || '<tr><td colspan="4" class="muted">No unassigned participants.</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  } else {
+    const g = groupStats.find(item => item.id === boardGroupFilter) || D.groups.find(item => item.id === boardGroupFilter);
+    if (!g) {
+      contentHtml += `<div class="card"><p class="muted">Group not found.</p></div>`;
+    } else {
+      const members = D.participants.filter(p => p.groupId === g.id).sort(sortFn);
+      const totalPoints = members.reduce((sum, p) => sum + p.score, 0);
+      contentHtml += `
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <h2>🏆 ${esc(g.name)} LEADERBOARD</h2>
+            <div style="display:flex;gap:8px">
+              <span class="pill">CODE: <code>${esc(g.code || '—')}</code></span>
+              <span class="pill" style="color:var(--good);border-color:var(--good)">TOTAL: ${totalPoints} PTS</span>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px">RANK</th>
+                <th>PARTICIPANT NAME</th>
+                <th>SOLVED</th>
+                <th>POINTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${members.map((p, i) => `
+                <tr>
+                  <td><b>${i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : ('#' + (i + 1))}</b></td>
+                  <td><b>${esc(p.name)}</b></td>
+                  <td><code>${p.solved}</code></td>
+                  <td><b style="color:var(--accent);font-size:15px">${p.score}</b></td>
+                </tr>
+              `).join('') || '<tr><td colspan="4" class="muted">No participants in this group yet. Share access code <code>' + esc(g.code) + '</code> to have members join.</td></tr>'}
+            </tbody>
+          </table>
+        </div>`;
+    }
+  }
+
+  $('#tabBody').innerHTML = filterButtons + contentHtml + `
+    <div style="margin-top:24px">
+      <button class="danger" id="rs">RESET ALL SCORES</button>
+    </div>`;
+
+  $('#tabBody').querySelectorAll('[data-bg]').forEach(b => {
+    b.onclick = () => {
+      boardGroupFilter = b.dataset.bg;
+      boardTab();
+    };
+  });
+
+  $('#rs').onclick = () => confirm('RESET EVERY PARTICIPANT\'S SCORE TO 0?') && act(() => api('/admin/reset-scores', 'POST'));
+}
+
+function groupsTab() {
+  const opts = (sel) => `<option value="">— no group —</option>` + D.groups.map(g => `<option value="${g.id}" ${g.id === sel ? 'selected' : ''}>${esc(g.name)}</option>`).join('');
+  const slotTxt = g => g.slot.status === 'running' ? `[ RUNNING: PROBLEM ${g.slot.idx + 1}/${D.problems.length} ]` : g.slot.status === 'finished' ? '[ FINISHED ]' : '[ NOT STARTED ]';
+  $('#tabBody').innerHTML = `
+    <div class="card">
+      <h2>GROUPS & TIMERS</h2>
+      <div class="row"><input id="gn" placeholder="NEW GROUP NAME (ACCESS CODE IS AUTO-GENERATED)"><button id="ga">+ ADD GROUP</button></div>
+      <table>
+        <thead>
+          <tr>
+            <th>GROUP</th>
+            <th>ACCESS CODE</th>
+            <th>MEMBERS</th>
+            <th>STATUS</th>
+            <th style="text-align:right">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${D.groups.map(g => {
+            const count = D.participants.filter(p => p.groupId === g.id).length;
+            return `<tr>
+              <td><b>${esc(g.name)}</b></td>
+              <td>
+                <span style="display:inline-flex;align-items:center;gap:6px">
+                  <code style="font-size:15px;letter-spacing:1.5px;font-weight:900">${esc(g.code || '—')}</code>
+                  <button class="ghost" data-copy="${esc(g.code)}" style="padding:3px 8px;font-size:11px" title="Copy code">📋</button>
+                  <button class="ghost" data-regen="${g.id}" style="padding:3px 8px;font-size:11px" title="Regenerate code">↻</button>
+                </span>
+              </td>
+              <td><span class="pill">${count} ${count === 1 ? 'MEMBER' : 'MEMBERS'}</span></td>
+              <td><span class="pill" style="border-color:${g.slot.status === 'running' ? 'var(--good)' : 'var(--line-subtle)'}">${slotTxt(g)}</span></td>
+              <td style="text-align:right">
+                <button class="good" data-start="${g.id}" style="padding:6px 12px;font-size:12px">${g.slot.status === 'waiting' ? '▶ START' : '↻ RESTART'}</button>
+                <button class="ghost" data-stop="${g.id}" style="padding:6px 12px;font-size:12px">⏹ STOP</button>
+                <button class="danger" data-delg="${g.id}" style="padding:6px 12px;font-size:12px">✕ DELETE</button>
+              </td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="5" class="muted">No groups created yet</td></tr>'}
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:14px">// SHARE THE 6-DIGIT ACCESS CODE WITH PARTICIPANTS TO LET THEM JOIN DIRECTLY //</p>
+    </div>
+    <div class="card">
+      <h2>PRE-REGISTER PARTICIPANTS (OPTIONAL)</h2>
+      <textarea id="pn" rows="3" placeholder="Optional: Enter names (one per line). Participants can also join by themselves using the access code."></textarea>
+      <div class="row" style="margin-top:12px"><select id="pg">${opts('')}</select><button id="pa">+ ADD TO GROUP</button></div>
+    </div>
+    <div class="card">
+      <h2>REGISTERED PARTICIPANTS</h2>
+      <table>
+        <thead>
+          <tr><th>NAME</th><th>ACCESS CODE</th><th>GROUP</th><th style="text-align:right">ACTIONS</th></tr>
+        </thead>
+        <tbody>
+          ${D.participants.map(p => `<tr>
+            <td><b>${esc(p.name)}</b></td>
+            <td><code>${esc(p.code)}</code></td>
+            <td><select data-mv="${p.id}">${opts(p.groupId)}</select></td>
+            <td style="text-align:right"><button class="danger" data-delp="${p.id}" style="padding:4px 10px;font-size:11px">REMOVE</button></td>
+          </tr>`).join('') || '<tr><td colspan="4" class="muted">No participants yet</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+
+  $('#ga').onclick = () => $('#gn').value.trim() && act(() => api('/admin/groups', 'POST', { name: $('#gn').value }));
+  $('#pa').onclick = () => $('#pn').value.trim() && act(() => api('/admin/participants', 'POST', { names: $('#pn').value, groupId: $('#pg').value }));
+  document.querySelectorAll('[data-start]').forEach(b => b.onclick = () => act(() => api(`/admin/groups/${b.dataset.start}/start`, 'POST')));
+  document.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => act(() => api(`/admin/groups/${b.dataset.stop}/stop`, 'POST')));
+  document.querySelectorAll('[data-delg]').forEach(b => b.onclick = () => confirm('Delete group?') && act(() => api(`/admin/groups/${b.dataset.delg}`, 'DELETE')));
+  document.querySelectorAll('[data-delp]').forEach(b => b.onclick = () => confirm('Remove participant?') && act(() => api(`/admin/participants/${b.dataset.delp}`, 'DELETE')));
+  document.querySelectorAll('[data-mv]').forEach(s => s.onchange = () => act(() => api(`/admin/participants/${s.dataset.mv}`, 'PUT', { groupId: s.value })));
+  document.querySelectorAll('[data-regen]').forEach(b => b.onclick = () => confirm('Regenerate access code for this group?') && act(() => api(`/admin/groups/${b.dataset.regen}/regenerate-code`, 'POST')));
+  document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
+    const code = b.dataset.copy;
+    if (!code) return;
+    navigator.clipboard?.writeText(code).then(() => {
+      const orig = b.textContent;
+      b.textContent = 'COPIED!';
+      setTimeout(() => b.textContent = orig, 1500);
+    }).catch(() => {
+      prompt('Group access code:', code);
+    });
+  });
+}
+
+function problemsTab() {
+  const starters = {
+    javascript: `function solve() {\n  // Buggy code\n  let sum = 0;\n  for (let i = 0; i <= 3; i++) sum += i;\n  return sum;\n}\nconsole.log(solve());`,
+    python: `def solve():\n    # Buggy code\n    total = 0\n    for i in range(1, 4):\n        total += i\n    return total\n\nprint(solve())`,
+    java: `public class Main {\n    public static void main(String[] args) {\n        int sum = 0;\n        for (int i = 1; i <= 3; i++) sum += i;\n        System.out.println(sum);\n    }\n}`,
+    csharp: `using System;\n\nclass Program {\n    static void Main() {\n        int sum = 0;\n        for (int i = 1; i <= 3; i++) sum += i;\n        Console.WriteLine(sum);\n    }\n}`,
+    c: `#include <stdio.h>\n\nint main() {\n    int sum = 0;\n    for (int i = 1; i <= 3; i++) sum += i;\n    printf("%d\\n", sum);\n    return 0;\n}`,
+    cpp: `#include <iostream>\n\nint main() {\n    int sum = 0;\n    for (int i = 1; i <= 3; i++) sum += i;\n    std::cout << sum << std::endl;\n    return 0;\n}`
+  };
+
+  const langBadge = l => {
+    const map = {
+      javascript: '🟨 JAVASCRIPT', js: '🟨 JAVASCRIPT',
+      python: '🐍 PYTHON 3', py: '🐍 PYTHON 3',
+      java: '☕ JAVA',
+      c: '🔷 C',
+      cpp: '⚡ C++', 'c++': '⚡ C++',
+      csharp: '🟣 C#', 'c#': '🟣 C#', cs: '🟣 C#'
+    };
+    return map[String(l || '').toLowerCase()] || String(l || 'JS').toUpperCase();
+  };
+
+  $('#tabBody').innerHTML = `
+    <div class="card" style="border:3px solid var(--accent);box-shadow:6px 6px 0px var(--accent);background:#10111a">
+      <div class="row" style="justify-content:space-between">
+        <h2>✨ AI CHALLENGE GENERATOR</h2>
+        <span class="pill" style="background:#000;color:var(--accent);border-color:var(--accent)">POWERED BY GEMINI</span>
+      </div>
+      <p class="muted">// GENERATE LIVE DEBUGGING CHALLENGES AUTOMATICALLY IN ANY LANGUAGE //</p>
+      <div class="row">
+        <select id="aiLang" style="max-width:160px">
+          <option value="javascript">🟨 JAVASCRIPT</option>
+          <option value="python">🐍 PYTHON 3</option>
+          <option value="java">☕ JAVA</option>
+          <option value="c">🔷 C</option>
+          <option value="cpp">⚡ C++</option>
+          <option value="csharp">🟣 C#</option>
+        </select>
+        <input id="aiTopic" placeholder="Topic (e.g. array sum, off-by-one, recursion, pointer flaw)">
+        <select id="aiDiff" style="max-width:130px">
+          <option value="Easy">EASY</option>
+          <option value="Medium" selected>MEDIUM</option>
+          <option value="Hard">HARD</option>
+        </select>
+        <button id="aiGenBtn" style="background:var(--accent);color:#000">✨ GENERATE</button>
+      </div>
+      <div id="aiGenStatus" class="msg info hidden"></div>
+    </div>
+
+    <div class="card">
+      <h2>ADD A CHALLENGE MANUALLY</h2>
+
+      <div class="row" style="margin-top:14px">
+        <div style="flex:2">
+          <label style="display:block;margin-bottom:6px">1. CHALLENGE TITLE</label>
+          <input id="pt" placeholder="e.g. Fix Array Sum, Off-by-One Counter, Pointer Error">
+        </div>
+        <div style="flex:1;max-width:200px">
+          <label style="display:block;margin-bottom:6px">2. LANGUAGE</label>
+          <select id="plang">
+            <option value="javascript">🟨 JAVASCRIPT</option>
+            <option value="python">🐍 PYTHON 3</option>
+            <option value="java">☕ JAVA</option>
+            <option value="c">🔷 C</option>
+            <option value="cpp">⚡ C++</option>
+            <option value="csharp">🟣 C#</option>
+          </select>
+        </div>
+      </div>
+
+      <p style="margin:16px 0 6px"><label>3. DESCRIPTION & LOGIC REQUIREMENTS</label></p>
+      <textarea id="pd" rows="2" placeholder="e.g. The function calculateTotal should return the sum of all item prices. Currently it has a bug. Fix it."></textarea>
+
+      <p style="margin:16px 0 6px"><label>4. BUGGY CODE (SHOWN TO PARTICIPANTS)</label></p>
+      <textarea id="pc" rows="8" placeholder="// The broken code that participants will see in their editor"></textarea>
+
+      <div class="row" style="margin-top:10px">
+        <button id="pTestRun" class="ghost" type="button" style="font-size:12px;padding:8px 16px">▶ TEST RUN CODE</button>
+        <button id="pUseOutput" class="good hidden" type="button" style="font-size:12px;padding:8px 16px">USE AS EXPECTED OUTPUT ➔</button>
+      </div>
+      <div id="pTestResult" class="msg info hidden"></div>
+
+      <p style="margin:16px 0 6px"><label>5. EXPECTED STDOUT OUTPUT</label></p>
+      <textarea id="pe" rows="3" placeholder="e.g. 85"></textarea>
+
+      <div class="row" style="margin-top:16px;align-items:flex-end">
+        <div>
+          <label style="display:block;margin-bottom:6px">6. POINTS AWARDED</label>
+          <input id="pp" type="number" value="10" placeholder="Points">
+        </div>
+        <button id="padd" style="height:44px">+ SAVE CHALLENGE</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ACTIVE CHALLENGE PLAYLIST</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th>TITLE</th>
+            <th>LANGUAGE</th>
+            <th>POINTS</th>
+            <th style="text-align:right">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${D.problems.map((p, i) => `<tr>
+            <td><b>#${i + 1}</b></td>
+            <td><b>${esc(p.title)}</b></td>
+            <td><span class="pill" style="border-color:var(--accent);color:var(--accent)">${langBadge(p.language)}</span></td>
+            <td><code>${p.points} PTS</code></td>
+            <td style="text-align:right">
+              <button class="ghost" data-up="${p.id}" style="padding:4px 10px;font-size:11px">▲</button>
+              <button class="ghost" data-dn="${p.id}" style="padding:4px 10px;font-size:11px">▼</button>
+              <button class="danger" data-delpr="${p.id}" style="padding:4px 10px;font-size:11px">✕</button>
+            </td>
+          </tr>`).join('') || '<tr><td colspan="5" class="muted">No challenges added yet.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+
+  $('#plang').onchange = () => {
+    const l = $('#plang').value;
+    if (!$('#pc').value.trim() || Object.values(starters).includes($('#pc').value.trim())) {
+      $('#pc').value = starters[l] || '';
+    }
+  };
+  if (!$('#pc').value) $('#pc').value = starters.javascript;
+
+  const genBtn = $('#aiGenBtn');
+  const genStatus = $('#aiGenStatus');
+  if (genBtn) {
+    genBtn.onclick = async () => {
+      genBtn.disabled = true;
+      genStatus.className = 'msg info';
+      genStatus.textContent = '✨ Gemini AI is generating your ' + $('#aiLang').value.toUpperCase() + ' challenge…';
+      genStatus.classList.remove('hidden');
+      try {
+        const res = await api('/admin/generate-problem', 'POST', {
+          language: $('#aiLang').value,
+          topic: $('#aiTopic').value,
+          difficulty: $('#aiDiff').value
+        });
+        if (res.problem) {
+          $('#pt').value = res.problem.title || '';
+          $('#plang').value = (res.problem.language || $('#aiLang').value).toLowerCase();
+          $('#pd').value = res.problem.description || '';
+          $('#pc').value = res.problem.code || '';
+          $('#pe').value = res.problem.expected || '';
+          $('#pp').value = res.problem.points || 10;
+          genStatus.className = 'msg ok';
+          genStatus.textContent = '✅ ' + (res.problem.language || '').toUpperCase() + ' challenge generated! Fields populated below. Review and click "+ SAVE CHALLENGE" to activate.';
+          $('#pt').scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (err) {
+        genStatus.className = 'msg err';
+        genStatus.textContent = 'Failed: ' + err.message + ' (Check your Gemini API Key in the AI Settings tab)';
+      } finally {
+        genBtn.disabled = false;
+      }
+    };
+  }
+
+  const testRunBtn = $('#pTestRun');
+  const useOutputBtn = $('#pUseOutput');
+  const testResBox = $('#pTestResult');
+  let lastTestOutput = '';
+
+  if (testRunBtn) {
+    testRunBtn.onclick = async () => {
+      const code = $('#pc').value;
+      const lang = $('#plang').value;
+      if (!code.trim()) { alert('Please enter code to test run.'); return; }
+      testRunBtn.disabled = true;
+      testResBox.className = 'msg info';
+      testResBox.textContent = `Running ${lang.toUpperCase()} code…`;
+      testResBox.classList.remove('hidden');
+      try {
+        const res = await api('/admin/run-test', 'POST', { code, language: lang });
+        if (res.ok) {
+          lastTestOutput = (res.output || '').trim();
+          testResBox.className = 'msg ok';
+          testResBox.innerHTML = `<b>✓ EXECUTION SUCCESSFUL:</b>\n<pre>${esc(res.output) || '(no stdout printed)'}</pre>`;
+          if (useOutputBtn && lastTestOutput) {
+            useOutputBtn.classList.remove('hidden');
+          }
+        } else {
+          testResBox.className = 'msg err';
+          testResBox.innerHTML = `<b>EXECUTION ERROR:</b>\n<pre>${esc(res.message || 'Execution failed')}</pre>`;
+          if (useOutputBtn) useOutputBtn.classList.add('hidden');
+        }
+      } catch (err) {
+        testResBox.className = 'msg err';
+        testResBox.textContent = 'Execution failed: ' + err.message;
+      } finally {
+        testRunBtn.disabled = false;
+      }
+    };
+  }
+
+  if (useOutputBtn) {
+    useOutputBtn.onclick = () => {
+      if (lastTestOutput) {
+        $('#pe').value = lastTestOutput;
+        testResBox.innerHTML += `<div style="margin-top:8px;font-size:12px;color:var(--good);font-weight:900">// COPIED OUTPUT INTO EXPECTED STDOUT //</div>`;
+      }
+    };
+  }
+
+  $('#padd').onclick = () => act(() => api('/admin/problems', 'POST', {
+    title: $('#pt').value,
+    language: $('#plang').value,
+    description: $('#pd').value,
+    code: $('#pc').value,
+    expected: $('#pe').value,
+    points: $('#pp').value
+  }));
+  document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => act(() => api(`/admin/problems/${b.dataset.up}/move`, 'POST', { dir: 'up' })));
+  document.querySelectorAll('[data-dn]').forEach(b => b.onclick = () => act(() => api(`/admin/problems/${b.dataset.dn}/move`, 'POST', { dir: 'down' })));
+  document.querySelectorAll('[data-delpr]').forEach(b => b.onclick = () => confirm('Delete problem?') && act(() => api(`/admin/problems/${b.dataset.delpr}`, 'DELETE')));
+}
+
+function aiTab() {
+  const s = D.aiSettings || {};
+  $('#tabBody').innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2>🤖 GOOGLE GEMINI AI & RUNNERS</h2>
+        <span class="pill" style="border-color:var(--accent);color:var(--accent)">MODEL: ${esc(s.geminiModel || 'gemini-3.8-flash')}</span>
+      </div>
+      <p class="muted">// POWERS AUTOMATED CODE REVIEW FOR SUBMISSIONS AND ONE-CLICK PROBLEM GENERATION //</p>
+      
+      <p style="margin-top:18px"><label>GOOGLE GEMINI API KEY</label></p>
+      <div class="row">
+        <input id="gk" type="password" placeholder="${s.hasKey ? (s.keyMasked ? s.keyMasked + ' (Configured)' : 'API Key Configured') : 'Paste your Google Gemini API Key here (AIza... or AQ...)'}">
+        <button id="sk">SAVE SETTINGS</button>
+        <button id="tk" class="ghost">TEST API KEY</button>
+      </div>
+
+      <div style="margin-top:20px">
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer">
+          <input type="checkbox" id="aiOn" ${s.aiEnabled ? 'checked' : ''} style="width:20px;height:20px;cursor:pointer">
+          <span style="font-size:14px;font-weight:800">ENABLE AI REQUIREMENT REVIEW ON PARTICIPANT SUBMISSIONS</span>
+        </label>
+        <p class="muted" style="margin:8px 0 0 32px">// CHECKS THAT PARTICIPANTS SOLVED THE CORE LOGIC AND DID NOT HARDCODE STDOUT //</p>
+      </div>
+
+      <div style="margin-top:22px">
+        <label style="display:block;margin-bottom:8px">CODE EXECUTION ENGINE</label>
+        <div class="row">
+          <select id="execEngine" style="max-width:320px">
+            <option value="auto" ${s.executionEngine === 'auto' || !s.executionEngine ? 'selected' : ''}>⚡ AUTO (LOCAL + PISTON CLOUD FALLBACK)</option>
+            <option value="piston" ${s.executionEngine === 'piston' ? 'selected' : ''}>☁️ PISTON CLOUD ENGINE ONLY</option>
+            <option value="local" ${s.executionEngine === 'local' ? 'selected' : ''}>💻 LOCAL HOST ONLY</option>
+          </select>
+          <span class="muted" style="font-size:12px;flex:2">// RUNS C, C++, JAVA, PYTHON, JS, AND C# EVEN IF COMPILERS ARE MISSING LOCALLY //</span>
+        </div>
+      </div>
+
+      <div id="aiMsg" class="msg info hidden"></div>
+
+      <div class="card" style="margin-top:24px;background:#000000;border:2.5px solid var(--line-subtle);box-shadow:4px 4px 0px #000000">
+        <h3 style="margin:0 0 10px;font-size:14px">// HOW TO GET A FREE GOOGLE GEMINI API KEY:</h3>
+        <ol style="color:var(--muted);font-size:13px;padding-left:18px;margin:0;line-height:1.8">
+          <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:700">Google AI Studio (aistudio.google.com)</a></li>
+          <li>Sign in with your Google account.</li>
+          <li>Click <b>"Create API key"</b> and copy your key.</li>
+          <li>Paste it above and click <b>SAVE SETTINGS</b>. (Completely free, no credit card required).</li>
+        </ol>
+      </div>
+    </div>`;
+
+  const msg = $('#aiMsg');
+  $('#sk').onclick = async () => {
+    const key = $('#gk').value.trim();
+    const enabled = $('#aiOn').checked;
+    const executionEngine = $('#execEngine') ? $('#execEngine').value : 'auto';
+    try {
+      await api('/admin/settings', 'POST', { geminiApiKey: key || undefined, aiEnabled: enabled, executionEngine });
+      msg.className = 'msg ok';
+      msg.textContent = '✓ Settings saved successfully!';
+      msg.classList.remove('hidden');
+      D = await api('/admin/data');
+      drawAdmin();
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = e.message;
+      msg.classList.remove('hidden');
+    }
+  };
+
+  $('#execEngine')?.addEventListener('change', async () => {
+    try {
+      await api('/admin/settings', 'POST', { executionEngine: $('#execEngine').value });
+      D = await api('/admin/data');
+    } catch (e) { alert(e.message); }
+  });
+
+  $('#aiOn').onchange = async () => {
+    try {
+      await api('/admin/settings', 'POST', { aiEnabled: $('#aiOn').checked });
+      D = await api('/admin/data');
+    } catch (e) { alert(e.message); }
+  };
+
+  $('#tk').onclick = async () => {
+    msg.className = 'msg info';
+    msg.textContent = 'Testing connection with Gemini AI…';
+    msg.classList.remove('hidden');
+    try {
+      const r = await api('/admin/test-ai', 'POST', { geminiApiKey: $('#gk').value });
+      msg.className = 'msg ok';
+      msg.textContent = '✅ Success (' + (r.model || 'Gemini') + ')! ' + r.message;
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = '❌ Test failed: ' + e.message;
+    }
+  };
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules/
+hackathon/node_modules/
+hackathon/temp_runs/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+

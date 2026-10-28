@@ -1,0 +1,16 @@
+{
+  "name": "debug-arena",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Debug Arena live hackathon platform",
+  "main": "hackathon/server.js",
+  "scripts": {
+    "start": "node hackathon/server.js",
+    "tunnel": "npx localtunnel --port 3000",
+    "test:runner": "node hackathon/test_runner.js",
+    "test:piston": "node hackathon/test_piston.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
