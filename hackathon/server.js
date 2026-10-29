@@ -10,9 +10,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const SLOT_MS = (Number(process.env.SLOT_MINUTES) || 20) * 60 * 1000; // 20 minutes per code
 const DB_FILE = path.join(__dirname, 'data.json');
 
-let db = { groups: [], participants: [], problems: [], solves: [], settings: { geminiApiKey: '', aiEnabled: true } };
+let db = { groups: [], participants: [], problems: [], solves: [], settings: { executionEngine: 'auto' } };
 if (fs.existsSync(DB_FILE)) { try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) {} }
-if (!db.settings) db.settings = { geminiApiKey: '', aiEnabled: true };
+if (!db.settings) db.settings = { executionEngine: 'auto' };
 const save = () => fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 const uid = () => crypto.randomBytes(6).toString('hex');
 const genCode = () => String(Math.floor(100000 + Math.random() * 900000));
@@ -422,126 +422,13 @@ app.post('/api/run', partOnly, async (req, res) => {
   res.json({ ok: true, output: r.output });
 });
 
-// ---------- Gemini AI Integration ----------
-const DEFAULT_GEMINI_MODELS = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-3.5-flash'];
-
-function getGeminiModels() {
-  const custom = (process.env.GEMINI_MODEL || db.settings?.geminiModel || '').trim();
-  const list = [custom, ...DEFAULT_GEMINI_MODELS].filter(Boolean);
-  return [...new Set(list)];
-}
-
-async function callGeminiJson(prompt, systemInstruction = '', apiKey) {
-  const models = getGeminiModels();
-  let lastError = null;
-
-  for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const body = {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: 'application/json'
-        }
-      };
-      if (systemInstruction) {
-        body.systemInstruction = { parts: [{ text: systemInstruction }] };
-      }
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        lastError = new Error(err.error?.message || `Gemini API error ${res.status}`);
-        if (res.status === 404 || res.status === 503) {
-          continue;
-        }
-        throw lastError;
-      }
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error('Empty response from Gemini');
-      const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-      return JSON.parse(cleaned);
-    } catch (e) {
-      lastError = e;
-    }
-  }
-  throw lastError || new Error('Failed to generate response from Gemini AI');
-}
-
-async function evaluateSubmissionWithAI(prob, code, output, apiKey) {
-  const lang = (prob.language || 'javascript').toUpperCase();
-  const prompt = `You are a hackathon code reviewer assessing a participant's submission for a ${lang} debugging challenge.
-
-PROGRAMMING LANGUAGE:
-${lang}
-
-PROBLEM TITLE:
-${prob.title}
-
-PROBLEM DESCRIPTION / REQUIREMENTS:
-${prob.description || 'Fix the bug in the code.'}
-
-EXPECTED OUTPUT:
-${prob.expected}
-
-PARTICIPANT'S SUBMITTED CODE:
-\`\`\`${prob.language || 'javascript'}
-${code}
-\`\`\`
-
-EXECUTION OUTPUT:
-${output}
-
-EVALUATION TASK:
-1. Did the participant actually satisfy the core requirements and fix the underlying bug, OR did they cheat / hardcode the output without solving the problem?
-2. Did the solution meet all logic requirements specified in the problem statement?
-3. Provide a constructive, encouraging 1-2 sentence hint or summary. Do not give away the full solution.
-
-Respond ONLY with valid JSON in this exact structure without markdown backticks:
-{
-  "meetsRequirements": true,
-  "feedback": "1-2 concise sentences explaining why the requirements are met OR guidance on what requirement was missed/violated"
-}`;
-
-  return await callGeminiJson(prompt, 'You are an objective, encouraging code review bot for a live debugging competition.', apiKey);
-}
-
 app.post('/api/submit', partOnly, async (req, res) => {
   const prob = currentProblemFor(req.p);
   if (!prob) return res.status(400).json({ error: 'No active problem' });
   const r = await runCode(req.body.code, prob.language);
   if (!r.ok) return res.json(r.message ? { ok: false, message: r.message } : errMsg(r.line));
 
-  const outputMatches = norm(r.output) === norm(prob.expected);
-  let meetsRequirements = outputMatches;
-  let aiFeedback = null;
-
-  const apiKey = db.settings?.geminiApiKey || process.env.GEMINI_API_KEY;
-  const aiEnabled = db.settings?.aiEnabled ?? true;
-
-  if (apiKey && aiEnabled) {
-    try {
-      const evaluation = await evaluateSubmissionWithAI(prob, req.body.code, r.output, apiKey);
-      if (evaluation) {
-        aiFeedback = evaluation.feedback;
-        if (evaluation.meetsRequirements === false) {
-          meetsRequirements = false;
-        }
-      }
-    } catch (err) {
-      console.warn('AI evaluation warning:', err.message);
-    }
-  }
-
-  const correct = outputMatches && meetsRequirements;
+  const correct = norm(r.output) === norm(prob.expected);
   if (correct && !db.solves.some(s => s.pid === req.p.id && s.problemId === prob.id)) {
     db.solves.push({ pid: req.p.id, problemId: prob.id, at: Date.now() });
     save();
@@ -549,10 +436,7 @@ app.post('/api/submit', partOnly, async (req, res) => {
   res.json({
     ok: true,
     correct,
-    outputMatches,
-    meetsRequirements,
-    output: r.output,
-    aiFeedback
+    output: r.output
   });
 });
 
@@ -564,19 +448,13 @@ app.get('/api/admin/data', adminOnly, (req, res) => {
     lastSolve: Math.max(0, ...db.solves.filter(s => s.pid === p.id).map(s => s.at)),
   }));
   const groups = db.groups.map(g => ({ ...g, slot: slotInfo(g) }));
-  const hasKey = Boolean(db.settings?.geminiApiKey || process.env.GEMINI_API_KEY);
-  const aiEnabled = db.settings?.aiEnabled ?? true;
   res.json({
     slotMinutes: SLOT_MS / 60000,
     groups,
     participants,
     problems: db.problems,
-    aiSettings: {
-      hasKey,
-      aiEnabled,
-      geminiModel: db.settings?.geminiModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash',
-      executionEngine: db.settings?.executionEngine || 'auto',
-      keyMasked: hasKey ? (db.settings?.geminiApiKey ? db.settings.geminiApiKey.slice(0, 6) + '...' + db.settings.geminiApiKey.slice(-4) : '(from process.env)') : ''
+    settings: {
+      executionEngine: db.settings?.executionEngine || 'auto'
     }
   });
 });
@@ -680,106 +558,14 @@ app.post('/api/admin/run-test', adminOnly, async (req, res) => {
 
 app.post('/api/admin/reset-scores', adminOnly, (req, res) => { db.solves = []; save(); res.json({ ok: true }); });
 
-// ---------- AI Admin Endpoints ----------
+// ---------- Settings Endpoints ----------
 app.post('/api/admin/settings', adminOnly, (req, res) => {
   if (!db.settings) db.settings = {};
-  if (req.body.geminiApiKey !== undefined) {
-    db.settings.geminiApiKey = String(req.body.geminiApiKey || '').trim();
-  }
-  if (req.body.aiEnabled !== undefined) {
-    db.settings.aiEnabled = Boolean(req.body.aiEnabled);
-  }
-  if (req.body.geminiModel !== undefined) {
-    db.settings.geminiModel = String(req.body.geminiModel || '').trim();
-  }
   if (req.body.executionEngine !== undefined) {
     db.settings.executionEngine = String(req.body.executionEngine || 'auto').trim();
   }
   save();
-  res.json({ ok: true });
-});
-
-app.post('/api/admin/test-ai', adminOnly, async (req, res) => {
-  const apiKey = req.body.geminiApiKey?.trim() || db.settings?.geminiApiKey || process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(400).json({ error: 'No Gemini API key provided' });
-  const models = getGeminiModels();
-  let lastError = null;
-
-  for (const model of models) {
-    try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: 'Reply in one short sentence confirming Google Gemini connection is working properly.' }] }]
-        })
-      });
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        lastError = new Error(err.error?.message || `Gemini API error (${resp.status})`);
-        if (resp.status === 404 || resp.status === 503) {
-          continue;
-        }
-        return res.status(400).json({ error: lastError.message });
-      }
-      const data = await resp.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Connected!';
-      return res.json({ ok: true, message: reply, model });
-    } catch (e) {
-      lastError = e;
-    }
-  }
-  res.status(400).json({ error: lastError?.message || 'Failed to connect to Gemini API' });
-});
-
-app.post('/api/admin/generate-problem', adminOnly, async (req, res) => {
-  const apiKey = db.settings?.geminiApiKey || process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Please configure your Gemini API Key in AI Settings first.' });
-  }
-  const language = String(req.body.language || 'javascript').toLowerCase().trim();
-  const topic = String(req.body.topic || '').trim() || `${language} syntax, logic, boundary check, or algorithm bugs`;
-  const difficulty = String(req.body.difficulty || 'Medium');
-
-  const printGuidance = {
-    javascript: 'console.log(...)',
-    python: 'print(...)',
-    java: 'System.out.println(...)',
-    csharp: 'Console.WriteLine(...)',
-    c: 'printf(...) in <stdio.h>',
-    cpp: 'std::cout in <iostream>'
-  }[language] || 'standard output';
-
-  const prompt = `Create an educational ${language.toUpperCase()} debugging challenge for a live hackathon competition.
-Target Language: ${language}
-Topic: ${topic}
-Difficulty: ${difficulty}
-
-Rules:
-1. The code must be 100% valid ${language}.
-2. The buggy code should contain a realistic bug (logic flaw, boundary error, off-by-one, type issue).
-3. The fixed code must print output to stdout using ${printGuidance}.
-4. Provide the EXACT expected stdout output string that the fixed code produces.
-
-Respond ONLY with valid JSON in this exact structure without markdown backticks:
-{
-  "title": "Short descriptive title",
-  "language": "${language}",
-  "description": "Clear problem statement explaining what the program should do and the requirements it must satisfy.",
-  "code": "The buggy code that participants need to fix",
-  "expected": "Exact expected stdout string",
-  "points": 10
-}`;
-
-  try {
-    const problem = await callGeminiJson(prompt, 'You are an expert computer science hackathon challenge designer.', apiKey);
-    res.json({ ok: true, problem });
-  } catch (e) {
-    res.status(500).json({ error: 'Failed to generate problem: ' + e.message });
-  }
+  res.json({ ok: true, settings: db.settings });
 });
 
 app.listen(PORT, () => {
