@@ -984,9 +984,9 @@ button { cursor: pointer; }
         <p>Three focused coding rounds. Ten minutes each. Find and fix ten coding errors per round to complete the full 30-minute competition. Precision and speed matter. The arena clock is live.</p>
       </div>
       <div class="hero-stats">
-        <div class="stat"><strong>03</strong><span>ROUNDS</span></div>
+        <div class="stat"><strong id="heroPointsEarned">0</strong><span>POINTS GAINED</span></div>
         <div class="stat"><strong>30<span style="font-size:12px"> MIN</span></strong><span>TOTAL TIME</span></div>
-        <div class="stat"><strong>30</strong><span>FIX TARGETS</span></div>
+        <div class="stat"><strong>300</strong><span>MAX SCORE</span></div>
       </div>
     </section>
 
@@ -1095,22 +1095,22 @@ button { cursor: pointer; }
           </div>
         </section>
 
-        <!-- FIX TRACKER & 10-ERROR GRID -->
+        <!-- FIX & POINTS TRACKER -->
         <section class="panel">
           <div class="panel-head">
             <div>
-              <div class="panel-title">FIX TRACKER</div>
-              <div class="panel-sub">Progress updates upon validation check</div>
+              <div class="panel-title">POINTS & FIX TRACKER</div>
+              <div class="panel-sub">10 pts per resolved bug · 100 pts per round</div>
             </div>
             <span class="pill" id="foundBadge">0 / 10 FIXED</span>
           </div>
           <div class="body-pad">
             <div class="count-row">
               <div>
-                <div class="muted">VALIDATED FIXES</div>
-                <div class="count-big"><span id="foundCount">00</span><small class="muted"> / 10</small></div>
+                <div class="muted">POINTS GAINED THIS ROUND</div>
+                <div class="count-big"><span id="pointsGained">0</span><small class="muted"> / 100 PTS</small></div>
               </div>
-              <div class="muted" id="percent">0% complete</div>
+              <div class="muted" id="totalScoreLabel">Total: 0 / 300 PTS</div>
             </div>
             <div class="progress-line">
               <div class="progress-fill" id="progressFill"></div>
@@ -1119,23 +1119,24 @@ button { cursor: pointer; }
               <!-- 10 error chips generated dynamically -->
             </div>
             <div class="legend">
-              <span><i></i> Not validated</span>
-              <span><i class="green"></i> Fix validated</span>
+              <span><i></i> Pending (0 pts)</span>
+              <span><i class="green"></i> Solved (+10 pts)</span>
             </div>
           </div>
         </section>
 
-        <!-- ROUND CHECKLIST -->
+        <!-- TARGET BREAKDOWN -->
         <section class="panel">
           <div class="panel-head">
             <div>
-              <div class="panel-title">ROUND CHECKLIST</div>
-              <div class="panel-sub">10 fixes required to clear this round</div>
+              <div class="panel-title">TARGET BREAKDOWN</div>
+              <div class="panel-sub">Target validation & points status (hints hidden)</div>
             </div>
+            <span class="pill good" id="pointsPill">+0 PTS</span>
           </div>
           <div class="body-pad">
             <div class="challenge-list" id="challengeList">
-              <!-- Checklist items dynamically generated -->
+              <!-- Target items dynamically generated -->
             </div>
           </div>
         </section>
@@ -1178,7 +1179,7 @@ button { cursor: pointer; }
               <div class="muted">ROUNDS CLEARED</div>
               <div class="count-big"><span id="roundsCleared">0</span><small class="muted"> / 3</small></div>
             </div>
-            <div class="muted" id="missionPercent">0% complete</div>
+            <div class="muted" id="missionScore">Score: 0 / 300 PTS</div>
           </div>
           <div class="progress-line">
             <div class="progress-fill" id="missionFill"></div>
@@ -1313,18 +1314,6 @@ const rounds = [
   {
     name: 'Initialize',
     file: 'round_01_initialize.py',
-    tasks: [
-      'Function definition colon',
-      'Correct multiplication (*)',
-      'Tax rate decimal (0.18)',
-      'Add tax to subtotal (+)',
-      'For loop colon syntax',
-      'Close print call parens',
-      'Close calculate_total call parens',
-      'Return total indentation',
-      'Subtotal calculation indentation',
-      'Tax calculation indentation'
-    ],
     sample: `# ROUND 01 // INITIALIZE
 # Fix all 10 beginner-level errors.
 
@@ -1356,18 +1345,6 @@ print("Total:", calculate_total(500, 2)
   {
     name: 'Deep Debug',
     file: 'round_02_deep_debug.py',
-    tasks: [
-      'Function definition colon',
-      'For loop colon syntax',
-      'Equality comparison (==)',
-      'Correct indentation for append',
-      'Correct return indentation',
-      'Use correct list name (scores)',
-      'Avoid misspelled variable (score)',
-      'Close find_even_numbers print',
-      'Close average print',
-      'Calculate mean from scores list'
-    ],
     sample: `# ROUND 02 // DEEP DEBUG
 # Fix all 10 beginner-level errors.
 
@@ -1399,18 +1376,6 @@ print("Average:", average)
   {
     name: 'Final Fix',
     file: 'round_03_final_fix.py',
-    tasks: [
-      'Function definition colon',
-      'If conditional colon syntax',
-      'Correct discount percentage (0.10)',
-      'Else block colon syntax',
-      'Correct return 0 indentation',
-      'For loop colon syntax',
-      'Close discount append call',
-      'Close discounts print parens',
-      'Use discounts list in max()',
-      'Print largest discount correctly'
-    ],
     sample: `# ROUND 03 // FINAL FIX
 # Fix all 10 beginner-level errors.
 
@@ -1706,33 +1671,39 @@ function renderChecks() {
   const list = $('challengeList');
   list.innerHTML = '';
 
-  rounds[current].tasks.forEach((task, i) => {
+  for (let i = 0; i < 10; i++) {
     const isFixed = r.checks[i];
     const item = document.createElement('div');
     item.className = 'challenge-item' + (isFixed ? ' solved' : '');
     item.innerHTML = `
       <div class="challenge-icon">${isFixed ? '✓' : String(i + 1).padStart(2, '0')}</div>
       <div>
-        <strong>Fix ${String(i + 1).padStart(2, '0')}</strong>
-        <small>${task}</small>
+        <strong>Target Bug ${String(i + 1).padStart(2, '0')}</strong>
+        <small style="color:${isFixed ? 'var(--green)' : 'var(--muted)'}">${isFixed ? 'Correction verified (+10 pts)' : 'Pending resolution (0 pts)'}</small>
       </div>
-      <span class="state">${isFixed ? 'VALIDATED' : 'PENDING'}</span>
+      <span class="state" style="color:${isFixed ? 'var(--green)' : 'var(--muted)'}; font-weight:700;">${isFixed ? '+10 PTS' : '0 PTS'}</span>
     `;
     list.appendChild(item);
-  });
+  }
 }
 
 function renderTracker() {
   const r = activeRound();
   if (!r) return;
+  const p = ensureP();
   const count = r.checks.filter(Boolean).length;
+  const roundPts = count * 10;
 
-  $('foundCount').textContent = String(count).padStart(2, '0');
+  const totalPts = p ? p.rounds.reduce((sum, rnd) => sum + (rnd.checks || []).filter(Boolean).length * 10, 0) : roundPts;
+
   $('foundBadge').textContent = `${count} / 10 FIXED`;
   $('foundBadge').className = 'pill ' + (count === 10 ? 'good' : count > 0 ? '' : 'warn');
 
-  $('percent').textContent = `${count * 10}% complete`;
-  $('progressFill').style.width = `${count * 10}%`;
+  if ($('pointsGained')) $('pointsGained').textContent = String(roundPts);
+  if ($('totalScoreLabel')) $('totalScoreLabel').textContent = `Total: ${totalPts} / 300 PTS`;
+  if ($('heroPointsEarned')) $('heroPointsEarned').textContent = String(totalPts);
+  if ($('pointsPill')) $('pointsPill').textContent = `+${roundPts} PTS GAINED`;
+  if ($('progressFill')) $('progressFill').style.width = `${count * 10}%`;
 
   const grid = $('errorGrid');
   grid.innerHTML = '';
@@ -1740,7 +1711,7 @@ function renderTracker() {
     const chip = document.createElement('div');
     chip.className = 'error-chip' + (isFixed ? ' found' : '');
     chip.textContent = isFixed ? '✓' : String(i + 1).padStart(2, '0');
-    chip.title = `Fix ${i + 1}: ${rounds[current].tasks[i]}`;
+    chip.title = isFixed ? `Target ${i + 1}: Validated (+10 pts)` : `Target ${i + 1}: Pending (0 pts)`;
     grid.appendChild(chip);
   });
 }
@@ -1749,15 +1720,16 @@ function renderMission() {
   const p = ensureP();
   if (!p) return;
   const done = p.rounds.filter(r => r.submitted).length;
+  const totalPts = p.rounds.reduce((sum, rnd) => sum + (rnd.checks || []).filter(Boolean).length * 10, 0);
 
   $('roundsCleared').textContent = done;
-  $('missionPercent').textContent = Math.round((done / 3) * 100) + '% complete';
+  if ($('missionScore')) $('missionScore').textContent = `Score: ${totalPts} / 300 PTS`;
   $('missionFill').style.width = (done / 3 * 100) + '%';
   $('missionBadge').textContent = done === 3 ? 'MISSION CLEARED' : 'IN PROGRESS';
   $('missionBadge').className = 'pill ' + (done === 3 ? 'good' : '');
   $('missionText').textContent = done === 3
-    ? 'All 3 rounds cleared! Outstanding performance in the Debug Arena.'
-    : `${done} of 3 rounds submitted. Complete each round to finalize your tournament standing.`;
+    ? `All 3 rounds cleared! Total Score Gained: ${totalPts} / 300 PTS.`
+    : `${done} of 3 rounds submitted. Current Score: ${totalPts} / 300 PTS. Complete each round to finalize your score.`;
 }
 
 // ==========================================
@@ -1883,13 +1855,13 @@ $('runBtn').onclick = () => {
   });
 
   const count = r.checks.filter(Boolean).length;
-  const missing = rounds[current].tasks.filter((_, i) => !r.checks[i]);
+  const points = count * 10;
 
   if (count === 10) {
-    r.lastResult = `★ ALL 10 TARGET FIXES VALIDATED!\nStatus: PASS\nAll planted errors have been successfully resolved. You can now click "Submit round" to lock in your score and unlock Round 0${current + 2}.`;
+    r.lastResult = `★ ALL 10 TARGET FIXES VALIDATED!\nPoints Gained: +100 PTS (10/10 bugs fixed)\nStatus: 100% Cleared\nAll errors have been resolved. You can now click "Submit round" to lock in your score and unlock Round 0${current + 2}.`;
     $('result').className = 'result good';
   } else {
-    r.lastResult = `VALIDATION CHECK: ${count}/10 fixes detected.\nStill pending correction:\n• ${missing.join('\n• ')}\n\nInspect each line carefully and test again.`;
+    r.lastResult = `VALIDATION RESULT: ${count}/10 fixes detected.\nPoints Gained: +${points} / 100 PTS\nStatus: ${10 - count} bug(s) remaining.\n\n(Competition mode: specific bug hints are hidden. Inspect your code carefully.)`;
     $('result').className = 'result bad';
   }
 
@@ -1898,6 +1870,7 @@ $('runBtn').onclick = () => {
   saveData();
   renderTracker();
   renderChecks();
+  renderMission();
 };
 
 $('submitBtn').onclick = () => {
@@ -1923,17 +1896,18 @@ $('submitBtn').onclick = () => {
   });
 
   const count = r.checks.filter(Boolean).length;
+  const points = count * 10;
   r.submitted = true;
   r.running = false;
   r.submittedAt = stamp();
-  r.lastResult = `ROUND SUBMITTED // ${count}/10 fixes locked in at ${r.submittedAt}.`;
+  r.lastResult = `ROUND SUBMITTED // Points Gained: +${points} / 100 PTS (${count}/10 fixes locked in at ${r.submittedAt}).`;
 
   p.lastActive = stamp();
   saveData();
   stopTimer();
 
   $('modalTitle').textContent = count === 10 ? '🎉 Round 0' + (current + 1) + ' Cleared!' : 'Round 0' + (current + 1) + ' Submitted';
-  $('modalText').textContent = `Result: ${count}/10 fixes validated. ${current < 2 ? 'Round 0' + (current + 2) + ' is now unlocked.' : 'You have completed all 3 competition rounds!'}`;
+  $('modalText').textContent = `Points Gained: +${points} / 100 PTS (${count}/10 fixes validated). ${current < 2 ? 'Round 0' + (current + 2) + ' is now unlocked.' : 'You have completed all 3 competition rounds!'}`;
   $('participantName').value = p.name;
   $('teamName').value = p.team || '';
   $('modalSecondary').style.display = 'none';
